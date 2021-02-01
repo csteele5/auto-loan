@@ -3,8 +3,6 @@ import { Component } from "react";
 import { Redirect, RouteComponentProps } from "react-router-dom";
 import PreQualifyService from "../services/prequalify.service";
 
-interface IProps {}
-
 interface IState {
   price: string;
   pricevalid: boolean;
@@ -342,6 +340,7 @@ export default class ProcessPreApproval extends Component<
       this.setState({
         useridvalid: true,
       });
+      // eslint-disable-next-line
       validateduserid = useridValResult.value;
     }
 
@@ -356,6 +355,7 @@ export default class ProcessPreApproval extends Component<
       this.setState({
         passwordvalid: true,
       });
+      // eslint-disable-next-line
       validatedpassword = passwordValResult.value;
     }
 
@@ -372,6 +372,7 @@ export default class ProcessPreApproval extends Component<
       this.setState({
         passwordconfirmvalid: true,
       });
+      // eslint-disable-next-line
       validatedpasswordconfirm = passwordconfirmValResult.value;
     }
 
