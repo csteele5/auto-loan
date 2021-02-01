@@ -7,15 +7,24 @@ interface IProps {}
 
 interface IState {
   price: string;
+  pricevalid: boolean;
   make: string;
+  makevalid: boolean;
   model: string;
+  modelvalid: boolean;
   income: string;
+  incomevalid: boolean;
   creditscore: string;
+  creditscorevalid: boolean;
+  validatemsg: string | null;
   submitted: boolean;
   outcome: string;
   userid: string;
+  useridvalid: boolean;
   password: string;
+  passwordvalid: boolean;
   passwordconfirm: string;
+  passwordconfirmvalid: boolean;
   usersubmitted: boolean;
   redirect: string | null;
 }
@@ -40,15 +49,24 @@ export default class ProcessPreApproval extends Component<
 
     this.state = {
       price: "",
+      pricevalid: true,
       make: "",
+      makevalid: true,
       model: "",
+      modelvalid: true,
       income: "",
+      incomevalid: true,
       creditscore: "",
+      creditscorevalid: true,
+      validatemsg: "",
       submitted: false,
       outcome: "",
       userid: "",
+      useridvalid: true,
       password: "",
+      passwordvalid: true,
       passwordconfirm: "",
+      passwordconfirmvalid: true,
       usersubmitted: false,
       redirect: null,
     };
@@ -95,32 +113,168 @@ export default class ProcessPreApproval extends Component<
     });
   }
 
-  submitApproval() {
-    const data = {
-      price: this.state.price,
-      make: this.state.make,
-      model: this.state.model,
-      income: this.state.income,
-      creditscore: this.state.creditscore,
-    };
+  priceValidate(price: string): { msg: string; value: number } {
+    let validationResults = { msg: "", value: 0 };
+    let newprice = parseInt(price.replace(/\D/g, ""));
 
-    PreQualifyService.prequalifyLoan(data)
-      .then((response) => {
-        // setCurrentTutorial(response.data);
-        // console.log("Get Data");
-        // console.log(response.data);
-        //alert(response.result);
-        if (response.result === "Qualified") {
-          this.setState({
-            submitted: true,
-          });
-        } else {
-          this.setState({ redirect: "/disqualified" });
-        }
-      })
-      .catch((e) => {
-        console.log(e);
+    if (newprice > 0) {
+      validationResults.value = newprice;
+      this.setState({
+        price: newprice.toString(),
       });
+    } else {
+      validationResults.msg = "Invalid";
+    }
+    return validationResults;
+  }
+
+  makeValidate(make: string): { msg: string; value: string } {
+    let validationResults = { msg: "", value: "" };
+    if (make.trim() !== "") {
+      validationResults.value = make.trim();
+    } else {
+      validationResults.msg = "Invalid";
+    }
+    return validationResults;
+  }
+
+  modelValidate(model: string): { msg: string; value: string } {
+    let validationResults = { msg: "", value: "" };
+    if (model.trim() !== "") {
+      validationResults.value = model.trim();
+    } else {
+      validationResults.msg = "Invalid";
+    }
+    return validationResults;
+  }
+
+  incomeValidate(income: string): { msg: string; value: number } {
+    let validationResults = { msg: "", value: 0 };
+    let newincome = parseInt(income.replace(/\D/g, ""));
+    if (newincome > 0) {
+      validationResults.value = newincome;
+      this.setState({
+        income: newincome.toString(),
+      });
+    } else {
+      validationResults.msg = "Invalid";
+    }
+    return validationResults;
+  }
+
+  creditscoreValidate(creditscore: string): { msg: string; value: number } {
+    let validationResults = { msg: "", value: 0 };
+    let newcreditscore = parseInt(creditscore.replace(/\D/g, ""));
+    if (newcreditscore > 0) {
+      validationResults.value = newcreditscore;
+      this.setState({
+        creditscore: newcreditscore.toString(),
+      });
+    } else {
+      validationResults.msg = "Invalid";
+    }
+    return validationResults;
+  }
+
+  submitApproval() {
+    // validate and prepare data for prequalification
+    let overallValidForm = true;
+    let validatedprice = 0;
+    const priceValResult = this.priceValidate(this.state.price);
+    if (priceValResult.msg.trim() === "Invalid") {
+      overallValidForm = false;
+      this.setState({
+        price: "",
+        pricevalid: false,
+      });
+    } else {
+      this.setState({
+        pricevalid: true,
+      });
+      validatedprice = priceValResult.value;
+    }
+    let validatedmake = "";
+    const makeValResult = this.makeValidate(this.state.make);
+    if (makeValResult.msg.trim() === "Invalid") {
+      overallValidForm = false;
+      this.setState({
+        make: "",
+        makevalid: false,
+      });
+    } else {
+      this.setState({
+        makevalid: true,
+      });
+      validatedmake = makeValResult.value;
+    }
+    let validatedmodel = "";
+    const modelValResult = this.modelValidate(this.state.model);
+    if (modelValResult.msg.trim() === "Invalid") {
+      overallValidForm = false;
+      this.setState({
+        model: "",
+        modelvalid: false,
+      });
+    } else {
+      this.setState({
+        modelvalid: true,
+      });
+      validatedmodel = modelValResult.value;
+    }
+    let validatedincome = 0;
+    const incomeValResult = this.incomeValidate(this.state.income);
+    if (incomeValResult.msg.trim() === "Invalid") {
+      overallValidForm = false;
+      this.setState({
+        income: "",
+        incomevalid: false,
+      });
+    } else {
+      this.setState({
+        incomevalid: true,
+      });
+      validatedincome = incomeValResult.value;
+    }
+    let validatedcreditscore = 0;
+    const creditscoreValResult = this.creditscoreValidate(
+      this.state.creditscore
+    );
+    if (incomeValResult.msg.trim() === "Invalid") {
+      overallValidForm = false;
+      this.setState({
+        creditscore: "",
+        creditscorevalid: false,
+      });
+    } else {
+      this.setState({
+        creditscorevalid: true,
+      });
+      validatedcreditscore = creditscoreValResult.value;
+    }
+
+    if (overallValidForm === true) {
+      const data = {
+        price: validatedprice,
+        make: validatedmake,
+        model: validatedmodel,
+        income: validatedincome,
+        creditscore: validatedcreditscore,
+      };
+
+      PreQualifyService.prequalifyLoan(data)
+        .then((response) => {
+          if (response.result === "Qualified") {
+            this.setState({
+              submitted: true,
+            });
+          } else {
+            this.setState({ redirect: "/disqualified" });
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    } // end overallValidForm check
   }
 
   createNewUser() {
@@ -144,7 +298,6 @@ export default class ProcessPreApproval extends Component<
                 type="text"
                 className="form-control"
                 id="userid"
-                required
                 value={this.state.userid}
                 onChange={this.onChangeUserID}
                 name="userid"
@@ -156,7 +309,6 @@ export default class ProcessPreApproval extends Component<
                 type="password"
                 className="form-control"
                 id="password"
-                required
                 value={this.state.password}
                 onChange={this.onChangePassword}
                 name="password"
@@ -168,7 +320,6 @@ export default class ProcessPreApproval extends Component<
                 type="password"
                 className="form-control"
                 id="passwordconfirm"
-                required
                 value={this.state.passwordconfirm}
                 onChange={this.onChangePasswordConfirm}
                 name="passwordconfirm"
@@ -185,65 +336,87 @@ export default class ProcessPreApproval extends Component<
               <label htmlFor="price">Vehicle Price</label>
               <input
                 type="text"
-                className="form-control"
+                className={
+                  "form-control " + (this.state.pricevalid ? " " : "is-invalid")
+                }
                 id="price"
-                required
                 value={this.state.price}
                 onChange={this.onChangePrice}
                 name="price"
               />
+              <div className="invalid-feedback">
+                Please provide a valid price for the desired vehicle.
+              </div>
             </div>
 
             <div className="form-group">
               <label htmlFor="make">Make of Vehicle</label>
               <input
                 type="text"
-                className="form-control"
+                className={
+                  "form-control " + (this.state.makevalid ? " " : "is-invalid")
+                }
                 id="make"
-                required
                 value={this.state.make}
                 onChange={this.onChangeMake}
                 name="make"
               />
+              <div className="invalid-feedback">
+                Please provide the make of the desired vehicle.
+              </div>
             </div>
 
             <div className="form-group">
               <label htmlFor="model">Model of Vehicle</label>
               <input
                 type="text"
-                className="form-control"
+                className={
+                  "form-control " + (this.state.modelvalid ? " " : "is-invalid")
+                }
                 id="model"
-                required
                 value={this.state.model}
                 onChange={this.onChangeModel}
                 name="model"
               />
+              <div className="invalid-feedback">
+                Please provide the model of the desired vehicle.
+              </div>
             </div>
 
             <div className="form-group">
               <label htmlFor="income">Your Average Annual Income</label>
               <input
                 type="text"
-                className="form-control"
+                className={
+                  "form-control " +
+                  (this.state.incomevalid ? " " : "is-invalid")
+                }
                 id="income"
-                required
                 value={this.state.income}
                 onChange={this.onChangeIncome}
                 name="income"
               />
+              <div className="invalid-feedback">
+                Please provide a valid annual income.
+              </div>
             </div>
 
             <div className="form-group">
               <label htmlFor="creditscore">Your Credit Score</label>
               <input
                 type="text"
-                className="form-control"
+                className={
+                  "form-control " +
+                  (this.state.creditscorevalid ? " " : "is-invalid")
+                }
                 id="creditscore"
-                required
                 value={this.state.creditscore}
                 onChange={this.onChangeCreditScore}
                 name="creditscore"
               />
+              <div className="invalid-feedback">
+                Please provide a valid credit score.
+              </div>
             </div>
 
             <button onClick={this.submitApproval} className="btn btn-success">
