@@ -263,7 +263,11 @@ export default class ProcessPreApproval extends Component<
 
       PreQualifyService.prequalifyLoan(data)
         .then((response) => {
-          if (response.result === "Qualified") {
+          if (response.result === "BAD REQUEST") {
+            alert(
+              "BAD REQUEST! \n Please try again with something more reasonably priced."
+            );
+          } else if (response.result === "Qualified") {
             this.setState({
               submitted: true,
             });
