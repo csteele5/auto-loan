@@ -165,7 +165,7 @@ export default class ProcessPreApproval extends Component<
   creditscoreValidate(creditscore: string): { msg: string; value: number } {
     let validationResults = { msg: "", value: 0 };
     let newcreditscore = parseInt(creditscore.replace(/\D/g, ""));
-    if (newcreditscore > 0) {
+    if (newcreditscore >= 300 && newcreditscore <= 850) {
       validationResults.value = newcreditscore;
       this.setState({
         creditscore: newcreditscore.toString(),
@@ -239,7 +239,7 @@ export default class ProcessPreApproval extends Component<
     const creditscoreValResult = this.creditscoreValidate(
       this.state.creditscore
     );
-    if (incomeValResult.msg.trim() === "Invalid") {
+    if (creditscoreValResult.msg.trim() === "Invalid") {
       overallValidForm = false;
       this.setState({
         creditscore: "",
@@ -277,8 +277,108 @@ export default class ProcessPreApproval extends Component<
     } // end overallValidForm check
   }
 
+  useridValidate(userid: string): { msg: string; value: string } {
+    let validationResults = { msg: "", value: "" };
+    if (
+      /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(
+        userid
+      )
+    ) {
+      validationResults.value = userid;
+    } else {
+      validationResults.msg = "Invalid";
+    }
+    return validationResults;
+  }
+
+  passwordValidate(password: string): { msg: string; value: string } {
+    let validationResults = { msg: "", value: "" };
+    let validated = true;
+
+    const passwordRegex = new RegExp(
+      "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*_-])(?=.{8,})"
+    );
+
+    validated = passwordRegex.test(password);
+
+    if (validated === true) {
+      validationResults.value = password;
+    } else {
+      validationResults.msg = "Invalid";
+    }
+    return validationResults;
+  }
+
+  passwordconfirmValidate(
+    passwordconfirm: string
+  ): { msg: string; value: string } {
+    let validationResults = { msg: "", value: "" };
+
+    const validated = passwordconfirm === this.state.password ? true : false;
+
+    if (validated === true) {
+      validationResults.value = passwordconfirm;
+    } else {
+      validationResults.msg = "Invalid";
+    }
+    return validationResults;
+  }
+
   createNewUser() {
-    alert("validatenew user");
+    // validate user login
+    let overallValidForm = true;
+    let validateduserid = "";
+    const useridValResult = this.useridValidate(this.state.userid);
+    if (useridValResult.msg.trim() === "Invalid") {
+      overallValidForm = false;
+      this.setState({
+        useridvalid: false,
+      });
+    } else {
+      this.setState({
+        useridvalid: true,
+      });
+      validateduserid = useridValResult.value;
+    }
+
+    let validatedpassword = "";
+    const passwordValResult = this.passwordValidate(this.state.password);
+    if (passwordValResult.msg.trim() === "Invalid") {
+      overallValidForm = false;
+      this.setState({
+        passwordvalid: false,
+      });
+    } else {
+      this.setState({
+        passwordvalid: true,
+      });
+      validatedpassword = passwordValResult.value;
+    }
+
+    let validatedpasswordconfirm = "";
+    const passwordconfirmValResult = this.passwordconfirmValidate(
+      this.state.passwordconfirm
+    );
+    if (passwordconfirmValResult.msg.trim() === "Invalid") {
+      overallValidForm = false;
+      this.setState({
+        passwordconfirmvalid: false,
+      });
+    } else {
+      this.setState({
+        passwordconfirmvalid: true,
+      });
+      validatedpasswordconfirm = passwordconfirmValResult.value;
+    }
+
+    if (overallValidForm === true) {
+      this.setState({
+        usersubmitted: true,
+      });
+      alert(
+        "Complete user registration and open pre-populated loan application"
+      );
+    } // end overallValidForm check
   }
 
   render() {
@@ -296,34 +396,53 @@ export default class ProcessPreApproval extends Component<
               <label htmlFor="userid">User ID</label>
               <input
                 type="text"
-                className="form-control"
+                className={
+                  "form-control " +
+                  (this.state.useridvalid ? " " : "is-invalid")
+                }
                 id="userid"
                 value={this.state.userid}
                 onChange={this.onChangeUserID}
                 name="userid"
               />
+              <div className="invalid-feedback">
+                Please provide a valid email address for your user id.
+              </div>
             </div>
             <div className="form-group">
               <label htmlFor="password">Password</label>
               <input
                 type="password"
-                className="form-control"
+                className={
+                  "form-control " +
+                  (this.state.passwordvalid ? " " : "is-invalid")
+                }
                 id="password"
                 value={this.state.password}
                 onChange={this.onChangePassword}
                 name="password"
               />
+              <div className="invalid-feedback">
+                Please provide a password at least 8 characters in length with
+                at least one capital, number and special character.
+              </div>
             </div>
             <div className="form-group">
               <label htmlFor="passwordconfirm">Confirm Password</label>
               <input
                 type="password"
-                className="form-control"
+                className={
+                  "form-control " +
+                  (this.state.passwordconfirmvalid ? " " : "is-invalid")
+                }
                 id="passwordconfirm"
                 value={this.state.passwordconfirm}
                 onChange={this.onChangePasswordConfirm}
                 name="passwordconfirm"
               />
+              <div className="invalid-feedback">
+                The two passwords must match to continue.
+              </div>
             </div>
             <button className="btn btn-success" onClick={this.createNewUser}>
               Create Your New Account
@@ -415,7 +534,7 @@ export default class ProcessPreApproval extends Component<
                 name="creditscore"
               />
               <div className="invalid-feedback">
-                Please provide a valid credit score.
+                Please provide a valid credit score between 300-850.
               </div>
             </div>
 
