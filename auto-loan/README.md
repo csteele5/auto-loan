@@ -17,9 +17,11 @@ To run the web site locally, follow these steps:
 - Download the source code from the GitHub repository to your local drive
 - Extract or Unzip the code (if compressed) into any working directory
 - Navigate to the auto-loan directory (containing the src and public directories)
+- If present, delete the following files: yarn.lock, package-lock.json
 - Open a terminal window or command prompt at this directory and run the following:
 
 ```
+npm install
 yarn start
 ```
 
